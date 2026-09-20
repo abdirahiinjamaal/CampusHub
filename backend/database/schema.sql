@@ -1,0 +1,58 @@
+CREATE DATABASE IF NOT EXISTS university;
+USE university;
+
+CREATE TABLE IF NOT EXISTS students (
+  student_id VARCHAR(20) PRIMARY KEY,
+  first_name VARCHAR(80) NOT NULL,
+  last_name VARCHAR(80) NOT NULL,
+  email VARCHAR(160) NOT NULL UNIQUE,
+  faculty VARCHAR(160) NOT NULL,
+  program VARCHAR(160) NOT NULL,
+  enrollment_year YEAR NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS courses (
+  course_id INT AUTO_INCREMENT PRIMARY KEY,
+  course_code VARCHAR(20) NOT NULL UNIQUE,
+  course_name VARCHAR(160) NOT NULL,
+  credit_hours DECIMAL(4,1) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS results (
+  result_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id VARCHAR(20) NOT NULL,
+  course_id INT NOT NULL,
+  semester VARCHAR(40) NOT NULL,
+  academic_year YEAR NOT NULL,
+  grade VARCHAR(4) NOT NULL,
+  grade_point DECIMAL(3,2) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_results_student FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+  CONSTRAINT fk_results_course FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS fees (
+  fee_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id VARCHAR(20) NOT NULL,
+  description VARCHAR(160) NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  due_date DATE NOT NULL,
+  status ENUM('PAID', 'PENDING', 'OVERDUE') NOT NULL DEFAULT 'PENDING',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_fees_student FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+  payment_id INT AUTO_INCREMENT PRIMARY KEY,
+  student_id VARCHAR(20) NOT NULL,
+  description VARCHAR(160) NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  payment_date DATE NOT NULL,
+  payment_method VARCHAR(50) NOT NULL,
+  reference VARCHAR(80) NOT NULL UNIQUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_payments_student FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+);

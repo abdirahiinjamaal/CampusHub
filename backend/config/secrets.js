@@ -13,6 +13,12 @@ function requireValue(value, name) {
   return value;
 }
 
+function getFrontendOrigins() {
+  const configured = process.env.FRONTEND_ORIGINS || process.env.FRONTEND_ORIGIN;
+  if (configured) return configured.split(',').map((origin) => origin.trim()).filter(Boolean);
+  return (process.env.NODE_ENV || 'development').toLowerCase() === 'production' ? [] : ['http://localhost:5173', 'http://localhost:4173'];
+}
+
 async function readSecret(client, secretName) {
   const response = await client.send(new GetSecretValueCommand({ SecretId: secretName }));
   return parseSecret(secretName, response.SecretString);
@@ -24,7 +30,7 @@ async function loadConfig() {
     return {
       isProduction: false,
       port: Number(process.env.PORT || 3000),
-      frontendOrigin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+      frontendOrigins: getFrontendOrigins(),
       jwtSecret: requireValue(process.env.JWT_SECRET || 'change-this-in-production', 'JWT_SECRET'),
       database: {
         host: process.env.DB_HOST || 'localhost',
@@ -44,7 +50,7 @@ async function loadConfig() {
   return {
     isProduction: true,
     port: Number(process.env.PORT || 3000),
-    frontendOrigin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+    frontendOrigins: getFrontendOrigins(),
     jwtSecret: requireValue(jwtSecret.secret, 'JWT secret'),
     database: {
       host: requireValue(databaseSecret.host, 'database host'),
